@@ -1,0 +1,35 @@
+version: '3'
+
+services:
+  # 后端服务
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env
+    restart: always
+    volumes:
+      - ./backend:/app
+    networks:
+      - resume-network
+
+  # 前端服务
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+    restart: always
+    networks:
+      - resume-network
+
+# 定义网络
+networks:
+  resume-network:
+    driver: bridge 
