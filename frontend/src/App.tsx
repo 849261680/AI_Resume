@@ -24,7 +24,7 @@ const App: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<AnalysisResult | null>(null);
   const [uploadStatus, setUploadStatus] = useState<'success' | 'error' | null>(null); // ⬅️ 上传状态
-  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const handleUpload = async (file: File) => {
     setLoading(true);
