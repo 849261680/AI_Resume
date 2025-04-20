@@ -13,8 +13,8 @@
 ## 技术架构
 
 ### 后端
-- FastAPI框架
-- GPT集成
+- FastAPI框架 
+- DeepSeek集成
 - 自然语言处理
 - 简历解析引擎
 
