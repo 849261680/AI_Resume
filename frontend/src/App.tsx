@@ -626,7 +626,7 @@ ${result.suggestions.map((s, i) => `${i+1}. ${s}`).join('\n')}
             <div style={{ width: '100%' }}> {/* 内部div确保内容从左开始 */} 
               {loading ? (
                 <div style={{ textAlign: 'center', width: '100%' }}> {/* 确保Spin也居中 */} 
-                  <Spin size="large" tip="正在分析中..." />
+                  <Spin size="large" />
                   <div style={{ marginTop: 16 }}>
                     <Text type="secondary">正在使用AI深度分析你的简历...</Text>
                   </div>
