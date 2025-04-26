@@ -46,7 +46,16 @@ const App: React.FC = () => {
     formData.append('file', file);
     try {
       console.log('Uploading file:', file);
-      const response = await axios.post('/api/analyze', formData, {
+      // 明确使用环境变量 VITE_API_URL 作为基础 URL
+      const apiUrl = import.meta.env.VITE_API_URL;
+      if (!apiUrl) {
+        console.error("错误：未设置 VITE_API_URL 环境变量。");
+        alert("API 地址未配置，请联系管理员。");
+        setLoading(false);
+        setUploadStatus('error');
+        return; // 提前返回，避免无效请求
+      }
+      const response = await axios.post(`${apiUrl}/api/analyze`, formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
         timeout: 30000 // 设置超时时间为30秒
       });
