@@ -448,30 +448,6 @@ ${result.suggestions.map((s, i) => `${i+1}. ${s}`).join('\n')}
           ResumeMaster AI
         </div>
         
-        {!isMobile && (
-          <Menu
-            mode="horizontal"
-            selectedKeys={[activeSection]}
-            style={{ flex: 1, justifyContent: 'center', border: 'none' }}
-          >
-            <Menu.Item key="home" onClick={() => scrollToSection('home')}>
-              首页
-            </Menu.Item>
-            <Menu.Item key="upload" onClick={() => scrollToSection('upload')}>
-              简历上传
-            </Menu.Item>
-            <Menu.Item key="testimonials" onClick={() => scrollToSection('testimonials')}>
-              用户评价
-            </Menu.Item>
-            <Menu.Item key="faq" onClick={() => scrollToSection('faq')}>
-              常见问题
-            </Menu.Item>
-            <Menu.Item key="about" onClick={() => scrollToSection('about')}>
-              关于我们
-            </Menu.Item>
-          </Menu>
-        )}
-        
         <Button 
           type="primary" 
           size={isMobile ? 'middle' : 'large'}
