@@ -10,7 +10,7 @@ import {
   List
 } from 'antd';
 import { UploadOutlined, FileDoneOutlined } from '@ant-design/icons';
-import axios from 'axios';
+import axios, { AxiosError } from 'axios';
 
 const { Title, Text } = Typography;
 
@@ -55,10 +55,30 @@ const App: React.FC = () => {
       console.log('Response data:', response.data);
     } catch (err) {
       setUploadStatus('error');
-      if (err.code === 'ECONNABORTED') {
-        console.error('请求超时，请稍后重试');
-        alert('请求超时，请稍后重试');
-        console.error('Error:', err);
+
+      // 使用 AxiosError 进行更精确的检查
+      if (axios.isAxiosError(err)) {
+        const axiosError = err as AxiosError; // 现在可以安全地断言类型
+        if (axiosError.code === 'ECONNABORTED') {
+          console.error('请求超时 (ECONNABORTED)，请稍后重试');
+          alert('请求超时，请稍后重试');
+        } else {
+          // 处理其他 Axios 错误 (例如，服务器返回 4xx, 5xx)
+          console.error('Axios 请求错误:', axiosError.response?.data || axiosError.message);
+          // 安全地访问 detail 属性
+          const detailMessage = (typeof axiosError.response?.data === 'object' && axiosError.response?.data !== null && 'detail' in axiosError.response.data) 
+                                ? (axiosError.response.data as any).detail 
+                                : axiosError.message;
+          alert(`请求失败: ${detailMessage}`);
+        }
+      } else if (err instanceof Error) {
+          // 处理其他 JavaScript 错误
+          console.error('JavaScript 错误:', err.message);
+          alert(`发生错误: ${err.message}`);
+      } else {
+          // 处理未知错误
+          console.error('未知错误:', err);
+          alert('发生未知错误，请查看控制台。');
       }
     } finally {
       setLoading(false);
