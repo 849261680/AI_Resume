@@ -2,11 +2,80 @@ import json
 import requests
 from typing import Dict, Any, List, Optional, Mapping
 
-from langchain.llms.base import LLM
-from langchain.output_parsers import PydanticOutputParser
-from langchain.pydantic_v1 import BaseModel, Field
-from langchain.prompts import PromptTemplate
-from langchain.chains import LLMChain
+
+class LLM:
+    """基础LLM类"""
+    
+    @property
+    def _llm_type(self) -> str:
+        pass
+    
+    def _call(
+        self,
+        prompt: str,
+        stop: Optional[List[str]] = None,
+    ) -> str:
+        pass
+
+
+class BaseModel:
+    """基础模型类"""
+    pass
+
+
+def Field(description=None):
+    """字段定义函数"""
+    return None
+
+
+class PromptTemplate:
+    """提示模板类"""
+    
+    def __init__(self, template, input_variables, partial_variables=None):
+        self.template = template
+        self.input_variables = input_variables
+        self.partial_variables = partial_variables or {}
+
+
+class PydanticOutputParser:
+    """Pydantic输出解析器"""
+    
+    def __init__(self, pydantic_object):
+        self.pydantic_object = pydantic_object
+    
+    def parse(self, text):
+        """解析文本为结构化对象"""
+        # 简单实现，实际使用时需要更完善的逻辑
+        import json
+        try:
+            return json.loads(text)
+        except:
+            return text
+    
+    def get_format_instructions(self):
+        """获取格式说明"""
+        return "请以JSON格式返回数据，包含以下字段：summary, keywords, suggestions"
+
+
+class LLMChain:
+    """LLM链类"""
+    
+    def __init__(self, llm, prompt):
+        self.llm = llm
+        self.prompt = prompt
+    
+    def run(self, **kwargs):
+        """运行链"""
+        # 简单实现
+        formatted_prompt = self.prompt.template
+        for key, value in kwargs.items():
+            if key in self.prompt.input_variables:
+                formatted_prompt = formatted_prompt.replace(f"{{{key}}}", value)
+                
+        for key, value in self.prompt.partial_variables.items():
+            formatted_prompt = formatted_prompt.replace(f"{{{key}}}", value)
+                
+        return self.llm._call(formatted_prompt)
 
 
 class KeywordsModel(BaseModel):
@@ -108,9 +177,9 @@ class ResumeAnalyzer:
             try:
                 parsed_output = self.output_parser.parse(result)
                 return {
-                    "summary": parsed_output.summary,
-                    "keywords": parsed_output.keywords,
-                    "suggestions": parsed_output.suggestions
+                    "summary": parsed_output.get("summary", ""),
+                    "keywords": parsed_output.get("keywords", []),
+                    "suggestions": parsed_output.get("suggestions", [])
                 }
             except Exception as parse_error:
                 print(f"解析DeepSeek输出时出错: {parse_error}")
