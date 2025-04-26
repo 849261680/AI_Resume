@@ -180,7 +180,7 @@ const App: React.FC = () => {
   const scrollToSection = throttle((sectionId: string) => {
     setActiveSection(sectionId);
     
-    let targetRef;
+    let targetRef: React.RefObject<HTMLDivElement> | null = null;
     switch(sectionId) {
       case 'home':
         targetRef = heroRef;
@@ -208,18 +208,22 @@ const App: React.FC = () => {
       try {
         // 使用requestAnimationFrame确保滚动平滑
         requestAnimationFrame(() => {
-          targetRef.current?.scrollIntoView({ 
-            behavior: 'smooth',
-            block: 'start'
-          });
+          if (targetRef && targetRef.current) {
+            targetRef.current.scrollIntoView({ 
+              behavior: 'smooth',
+              block: 'start'
+            });
+          }
         });
       } catch (err) {
         // 降级方案
-        const offsetTop = targetRef.current.offsetTop - 64;
-        window.scrollTo({
-          top: offsetTop,
-          behavior: 'smooth'
-        });
+        if (targetRef && targetRef.current) {
+          const offsetTop = targetRef.current.offsetTop - 64;
+          window.scrollTo({
+            top: offsetTop,
+            behavior: 'smooth'
+          });
+        }
       }
     }
   }, 300); // 300ms的节流时间
