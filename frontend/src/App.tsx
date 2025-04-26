@@ -573,16 +573,17 @@ ${result.suggestions.map((s, i) => `${i+1}. ${s}`).join('\n')}
           <Button
             type="primary"
             size="large"
-            icon={<UploadOutlined />}
+            icon={<UploadOutlined style={{ marginRight: '4px' }} />}
             onClick={() => document.getElementById('resume-upload-input')?.click()}
             style={{ 
               height: isMobile ? 48 : 56,
               fontSize: isMobile ? 16 : 18,
-              padding: '0 12px',
+              padding: '0 8px',
               display: 'inline-flex',
               alignItems: 'center',
               justifyContent: 'center',
               width: 'auto',
+              maxWidth: isMobile ? '110px' : '130px',
               borderRadius: 8,
               marginBottom: 16,
               background: '#ffffff',
