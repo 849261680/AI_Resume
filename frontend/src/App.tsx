@@ -580,14 +580,14 @@ ${result.suggestions.map((s, i) => `${i+1}. ${s}`).join('\n')}
               style={{ 
                 height: isMobile ? 48 : 56,
                 fontSize: isMobile ? 16 : 18,
-                padding: '0 8px',
+                padding: '0 24px',   // 增加左右内边距以容纳一个字宽
                 display: 'inline-flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                width: 'auto',
-                maxWidth: isMobile ? '110px' : '130px',
+                width: 'auto',      
+                // maxWidth: isMobile ? '110px' : '130px', // 移除maxWidth，让padding决定宽度
                 borderRadius: 8,
-                marginBottom: 16, // 保持与下方文本的间距
+                marginBottom: 16, 
                 background: '#ffffff',
                 color: 'var(--color-primary)',
                 border: 'none',
@@ -605,11 +605,11 @@ ${result.suggestions.map((s, i) => `${i+1}. ${s}`).join('\n')}
               </Text>
             </div>
           </div>
-          {/* 结果展示区，宽度统一 */}
+          {/* 结果展示区，宽度统一，初始高度增加 */}
           <div style={{
             margin: '40px auto 0 auto',
-            maxWidth: isMobile ? '90%' : '900px', // 移动端使用百分比，PC端固定宽度
-            width: '100%', // 确保在容器内占满允许的最大宽度
+            maxWidth: isMobile ? '90%' : '900px',
+            width: '100%', 
             background: '#fff',
             borderRadius: 16,
             boxShadow: '0 4px 24px rgba(53,99,233,0.08)',
@@ -618,10 +618,10 @@ ${result.suggestions.map((s, i) => `${i+1}. ${s}`).join('\n')}
             textAlign: 'left',
             position: 'relative',
             zIndex: 2,
-            minHeight: 220, // 保持最小高度
-            display: 'flex', // 使用flex布局确保内部元素撑开
-            justifyContent: 'center', // 水平居中内容（对于Spin和Empty）
-            alignItems: 'center' // 垂直居中内容（对于Spin和Empty）
+            minHeight: loading || result ? 220 : 330, // 初始状态(Empty)高度增加到330px
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center' 
           }}>
             <div style={{ width: '100%' }}> {/* 内部div确保内容从左开始 */} 
               {loading ? (
