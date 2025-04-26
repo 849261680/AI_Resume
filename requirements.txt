@@ -7,3 +7,4 @@ python-dotenv==0.19.2
 requests==2.27.1
 pydantic==1.8.2
 spacy==3.0.9
+langchain==0.0.27
