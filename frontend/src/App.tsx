@@ -518,94 +518,98 @@ ${result.suggestions.map((s, i) => `${i+1}. ${s}`).join('\n')}
             智能解析，精准优化
           </Title>
           
-          {/* 新上传按钮，点击后弹出文件选择并自动分析 */}
-          <input
-            id="resume-upload-input"
-            type="file"
-            accept=".pdf,.docx,.doc,.txt"
-            style={{ display: 'none' }}
-            onChange={async (e) => {
-              const files = e.target.files;
-              if (files && files.length > 0) {
-                setFile(files[0]);
-                setUploadStatus(null);
-                setResult(null);
-                setLoading(true);
-                // 读取文件内容预览
-                const reader = new FileReader();
-                reader.onload = (ev) => {
-                  if (ev.target && typeof ev.target.result === 'string') {
-                    setResumeText(ev.target.result.substring(0, 500) + '...');
-                    setShowResumeText(true);
+          {/* 包裹按钮和提示文本，便于居中 */}
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+            {/* 新上传按钮，点击后弹出文件选择并自动分析 */}
+            <input
+              id="resume-upload-input"
+              type="file"
+              accept=".pdf,.docx,.doc,.txt"
+              style={{ display: 'none' }}
+              onChange={async (e) => {
+                const files = e.target.files;
+                if (files && files.length > 0) {
+                  setFile(files[0]);
+                  setUploadStatus(null);
+                  setResult(null);
+                  setLoading(true);
+                  // 读取文件内容预览
+                  const reader = new FileReader();
+                  reader.onload = (ev) => {
+                    if (ev.target && typeof ev.target.result === 'string') {
+                      setResumeText(ev.target.result.substring(0, 500) + '...');
+                      setShowResumeText(true);
+                    }
+                  };
+                  reader.readAsText(files[0]);
+                  // 自动分析
+                  const formData = new FormData();
+                  formData.append('file', files[0]);
+                  if (targetPosition) {
+                    formData.append('position', targetPosition);
                   }
-                };
-                reader.readAsText(files[0]);
-                // 自动分析
-                const formData = new FormData();
-                formData.append('file', files[0]);
-                if (targetPosition) {
-                  formData.append('position', targetPosition);
-                }
-                try {
-                  const apiUrl = import.meta.env.VITE_API_URL;
-                  if (!apiUrl) {
-                    message.error("API 地址未配置，请联系管理员。");
-                    setLoading(false);
+                  try {
+                    const apiUrl = import.meta.env.VITE_API_URL;
+                    if (!apiUrl) {
+                      message.error("API 地址未配置，请联系管理员。");
+                      setLoading(false);
+                      setUploadStatus('error');
+                      return;
+                    }
+                    const response = await axios.post(`${apiUrl}/api/analyze`, formData, {
+                      headers: { 'Content-Type': 'multipart/form-data' },
+                      timeout: 30000
+                    });
+                    setResult(response.data);
+                    setUploadStatus('success');
+                    message.success('简历分析完成！');
+                  } catch (err) {
                     setUploadStatus('error');
-                    return;
+                    message.error('简历分析失败，请重试');
+                  } finally {
+                    setLoading(false);
                   }
-                  const response = await axios.post(`${apiUrl}/api/analyze`, formData, {
-                    headers: { 'Content-Type': 'multipart/form-data' },
-                    timeout: 30000
-                  });
-                  setResult(response.data);
-                  setUploadStatus('success');
-                  message.success('简历分析完成！');
-                } catch (err) {
-                  setUploadStatus('error');
-                  message.error('简历分析失败，请重试');
-                } finally {
-                  setLoading(false);
                 }
-              }
-            }}
-          />
-          <Button
-            type="primary"
-            size="large"
-            icon={<UploadOutlined style={{ marginRight: '4px' }} />}
-            onClick={() => document.getElementById('resume-upload-input')?.click()}
-            style={{ 
-              height: isMobile ? 48 : 56,
-              fontSize: isMobile ? 16 : 18,
-              padding: '0 8px',
-              display: 'inline-flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              width: 'auto',
-              maxWidth: isMobile ? '110px' : '130px',
-              borderRadius: 8,
-              marginBottom: 16,
-              background: '#ffffff',
-              color: 'var(--color-primary)',
-              border: 'none',
-              fontWeight: 600,
-              boxShadow: '0 8px 16px rgba(0, 0, 0, 0.1)'
-            }}
-            className="hero-button"
-            loading={loading}
-          >
-            上传简历
-          </Button>
-          <div>
-            <Text type="secondary">
-              支持PDF / DOCX / TXT格式
-            </Text>
+              }}
+            />
+            <Button
+              type="primary"
+              size="large"
+              icon={<UploadOutlined style={{ marginRight: '4px' }} />}
+              onClick={() => document.getElementById('resume-upload-input')?.click()}
+              style={{ 
+                height: isMobile ? 48 : 56,
+                fontSize: isMobile ? 16 : 18,
+                padding: '0 8px',
+                display: 'inline-flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                width: 'auto',
+                maxWidth: isMobile ? '110px' : '130px',
+                borderRadius: 8,
+                marginBottom: 16, // 保持与下方文本的间距
+                background: '#ffffff',
+                color: 'var(--color-primary)',
+                border: 'none',
+                fontWeight: 600,
+                boxShadow: '0 8px 16px rgba(0, 0, 0, 0.1)'
+              }}
+              className="hero-button"
+              loading={loading}
+            >
+              上传简历
+            </Button>
+            <div>
+              <Text type="secondary">
+                支持PDF / DOCX / TXT格式
+              </Text>
+            </div>
           </div>
-          {/* 结果展示区，无论是否有结果都显示，并加宽 */}
+          {/* 结果展示区，宽度统一 */}
           <div style={{
             margin: '40px auto 0 auto',
-            maxWidth: isMobile ? 360 : 900,
+            maxWidth: isMobile ? '90%' : '900px', // 移动端使用百分比，PC端固定宽度
+            width: '100%', // 确保在容器内占满允许的最大宽度
             background: '#fff',
             borderRadius: 16,
             boxShadow: '0 4px 24px rgba(53,99,233,0.08)',
@@ -614,72 +618,77 @@ ${result.suggestions.map((s, i) => `${i+1}. ${s}`).join('\n')}
             textAlign: 'left',
             position: 'relative',
             zIndex: 2,
-            minHeight: 220
+            minHeight: 220, // 保持最小高度
+            display: 'flex', // 使用flex布局确保内部元素撑开
+            justifyContent: 'center', // 水平居中内容（对于Spin和Empty）
+            alignItems: 'center' // 垂直居中内容（对于Spin和Empty）
           }}>
-            {loading ? (
-              <div style={{ textAlign: 'center', padding: '40px 0' }}>
-                <Spin size="large" tip="正在分析中..." />
-                <div style={{ marginTop: 16 }}>
-                  <Text type="secondary">正在使用AI深度分析你的简历...</Text>
-                </div>
-              </div>
-            ) : result ? (
-              <>
-                <Title level={3} style={{ color: 'var(--color-primary)', marginBottom: 24 }}>AI分析结果</Title>
-                <div style={{ marginBottom: 24 }}>
-                  <Title level={5}>📝 简历摘要</Title>
-                  <Paragraph style={{ background: '#f9f9f9', padding: 16, borderRadius: 8 }}>
-                    {result.summary}
-                  </Paragraph>
-                </div>
-                <div style={{ marginBottom: 24 }}>
-                  <Title level={5}>📌 关键技能</Title>
-                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
-                    {result.keywords.length > 0 ? (
-                      result.keywords.map((keyword, index) => (
-                        <Tag color="blue" key={index} style={{ margin: 0, padding: '4px 8px', fontSize: 14 }}>
-                          {keyword}
-                        </Tag>
-                      ))
-                    ) : (
-                      <Text type="secondary">暂无提取到关键技能</Text>
-                    )}
+            <div style={{ width: '100%' }}> {/* 内部div确保内容从左开始 */} 
+              {loading ? (
+                <div style={{ textAlign: 'center', width: '100%' }}> {/* 确保Spin也居中 */} 
+                  <Spin size="large" tip="正在分析中..." />
+                  <div style={{ marginTop: 16 }}>
+                    <Text type="secondary">正在使用AI深度分析你的简历...</Text>
                   </div>
                 </div>
-                <div>
-                  <Title level={5}>📈 优化建议</Title>
-                  <List
-                    size="small"
-                    dataSource={result.suggestions}
-                    renderItem={(item, index) => (
-                      <List.Item style={{ padding: '8px 0' }}>
-                        <div style={{ display: 'flex', alignItems: 'flex-start' }}>
-                          <CheckCircleOutlined style={{ color: '#52c41a', marginRight: 8, marginTop: 4 }} />
-                          <div>{`${index + 1}. ${item}`}</div>
-                        </div>
-                      </List.Item>
-                    )}
-                    locale={{ emptyText: '暂无优化建议' }}
-                  />
+              ) : result ? (
+                <div style={{ textAlign: 'left', width: '100%' }}> {/* 确保分析结果靠左 */} 
+                  <Title level={3} style={{ color: 'var(--color-primary)', marginBottom: 24 }}>AI分析结果</Title>
+                  <div style={{ marginBottom: 24 }}>
+                    <Title level={5}>📝 简历摘要</Title>
+                    <Paragraph style={{ background: '#f9f9f9', padding: 16, borderRadius: 8 }}>
+                      {result.summary}
+                    </Paragraph>
+                  </div>
+                  <div style={{ marginBottom: 24 }}>
+                    <Title level={5}>📌 关键技能</Title>
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+                      {result.keywords.length > 0 ? (
+                        result.keywords.map((keyword, index) => (
+                          <Tag color="blue" key={index} style={{ margin: 0, padding: '4px 8px', fontSize: 14 }}>
+                            {keyword}
+                          </Tag>
+                        ))
+                      ) : (
+                        <Text type="secondary">暂无提取到关键技能</Text>
+                      )}
+                    </div>
+                  </div>
+                  <div>
+                    <Title level={5}>📈 优化建议</Title>
+                    <List
+                      size="small"
+                      dataSource={result.suggestions}
+                      renderItem={(item, index) => (
+                        <List.Item style={{ padding: '8px 0' }}>
+                          <div style={{ display: 'flex', alignItems: 'flex-start' }}>
+                            <CheckCircleOutlined style={{ color: '#52c41a', marginRight: 8, marginTop: 4 }} />
+                            <div>{`${index + 1}. ${item}`}</div>
+                          </div>
+                        </List.Item>
+                      )}
+                      locale={{ emptyText: '暂无优化建议' }}
+                    />
+                  </div>
+                  <Divider />
+                  <div style={{ textAlign: 'center' }}>
+                    <Button
+                      type="primary"
+                      icon={<DownloadOutlined />}
+                      onClick={handleDownloadReport}
+                      style={{ borderRadius: 8, padding: '0 24px' }}
+                    >
+                      下载分析报告
+                    </Button>
+                  </div>
                 </div>
-                <Divider />
-                <div style={{ textAlign: 'center' }}>
-                  <Button
-                    type="primary"
-                    icon={<DownloadOutlined />}
-                    onClick={handleDownloadReport}
-                    style={{ borderRadius: 8, padding: '0 24px' }}
-                  >
-                    下载分析报告
-                  </Button>
+              ) : (
+                <div style={{ textAlign: 'center', width: '100%' }}> {/* 确保Empty也居中 */} 
+                  <FileTextOutlined style={{ fontSize: 40, color: '#d9d9d9', marginBottom: 16 }} />
+                  <div style={{ fontSize: 18, marginTop: 8, color: '#888' }}>请上传您的简历，AI将为您生成分析结果</div>
                 </div>
-              </>
-            ) : (
-              <div style={{ textAlign: 'center', padding: '40px 0', color: '#888' }}>
-                <FileTextOutlined style={{ fontSize: 40, color: '#d9d9d9', marginBottom: 16 }} />
-                <div style={{ fontSize: 18, marginTop: 8 }}>请上传您的简历，AI将为您生成分析结果</div>
-              </div>
-            )}
+              )}
+            </div>
           </div>
         </div>
       </Content>
