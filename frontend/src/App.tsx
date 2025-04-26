@@ -123,10 +123,22 @@ const App: React.FC = () => {
     }
     
     if (targetRef && targetRef.current) {
-      window.scrollTo({
-        top: targetRef.current.offsetTop - 64, // 64px是Header的高度
-        behavior: 'smooth'
-      });
+      try {
+        // 使用requestAnimationFrame确保滚动平滑
+        requestAnimationFrame(() => {
+          targetRef.current?.scrollIntoView({ 
+            behavior: 'smooth',
+            block: 'start'
+          });
+        });
+      } catch (err) {
+        // 降级方案
+        const offsetTop = targetRef.current.offsetTop - 64;
+        window.scrollTo({
+          top: offsetTop,
+          behavior: 'smooth'
+        });
+      }
     }
   }, 300); // 300ms的节流时间
 
@@ -302,13 +314,22 @@ ${result.suggestions.map((s, i) => `${i+1}. ${s}`).join('\n')}
   );
 
   return (
-    <Layout style={{ minHeight: '100vh' }}>
+    <Layout style={{ 
+      height: '100vh', 
+      overflowY: 'auto', 
+      overflowX: 'hidden',
+      willChange: 'transform', // 启用硬件加速
+      transform: 'translateZ(0)', // 强制GPU渲染
+      WebkitBackfaceVisibility: 'hidden', // 防止元素闪烁
+      backfaceVisibility: 'hidden'
+    }}>
       {/* 导航栏 */}
       <Header style={{ 
-        position: 'sticky', 
+        position: 'fixed', 
         top: 0, 
         zIndex: 999, 
         width: '100%',
+        height: 64,
         background: '#fff',
         boxShadow: '0 2px 8px rgba(0, 0, 0, 0.06)',
         padding: isMobile ? '0 16px' : '0 50px',
@@ -370,7 +391,7 @@ ${result.suggestions.map((s, i) => `${i+1}. ${s}`).join('\n')}
         )}
       </Header>
       
-      <Content>
+      <Content style={{ paddingTop: 64 }}>
         {/* Hero区域 */}
         <div 
           ref={heroRef}
@@ -378,6 +399,12 @@ ${result.suggestions.map((s, i) => `${i+1}. ${s}`).join('\n')}
             textAlign: 'center',
             padding: isMobile ? '40px 16px' : '80px 50px',
             background: 'linear-gradient(135deg, #f5f9ff 0%, #ecf6ff 100%)',
+            minHeight: isMobile ? 400 : 500,
+            display: 'flex',
+            flexDirection: 'column',
+            justifyContent: 'center',
+            position: 'relative',
+            overflow: 'hidden'
           }}
         >
           <Title 
@@ -442,6 +469,8 @@ ${result.suggestions.map((s, i) => `${i+1}. ${s}`).join('\n')}
           style={{
             padding: isMobile ? '40px 16px' : '80px 50px',
             background: '#fff',
+            minHeight: isMobile ? 400 : 500,
+            position: 'relative'
           }}
         >
           <Title 
@@ -488,6 +517,8 @@ ${result.suggestions.map((s, i) => `${i+1}. ${s}`).join('\n')}
           style={{
             padding: isMobile ? '40px 16px' : '80px 50px',
             background: '#f5f9ff',
+            minHeight: isMobile ? 500 : 600,
+            position: 'relative'
           }}
         >
           <Row justify="center">
@@ -741,6 +772,8 @@ ${result.suggestions.map((s, i) => `${i+1}. ${s}`).join('\n')}
           style={{
             padding: isMobile ? '40px 16px' : '80px 50px',
             background: '#fff',
+            minHeight: isMobile ? 400 : 500,
+            position: 'relative'
           }}
         >
           <Row justify="center">
