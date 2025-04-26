@@ -33,7 +33,11 @@ app = FastAPI(title="AI简历优化助手")
 # 配置CORS
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=[
+        "https://ai-resume-analyzer.vercel.app",  # Vercel前端地址(示例)
+        "http://localhost:3000",                  # 本地前端开发地址
+        "*"                                       # 允许所有来源(生产环境可能需要限制)
+    ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
