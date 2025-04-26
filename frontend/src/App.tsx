@@ -86,8 +86,22 @@ const App: React.FC = () => {
   const isMobile = width < 576;
   const isTablet = width >= 576 && width < 992;
 
-  // 滚动到指定区域
-  const scrollToSection = (sectionId: string) => {
+  // 添加节流函数
+  const throttle = (func: Function, delay: number) => {
+    let inThrottle: boolean = false;
+    return function(this: any, ...args: any[]) {
+      if (!inThrottle) {
+        inThrottle = true;
+        func.apply(this, args);
+        setTimeout(() => {
+          inThrottle = false;
+        }, delay);
+      }
+    };
+  };
+
+  // 使用节流的滚动函数
+  const scrollToSection = throttle((sectionId: string) => {
     setActiveSection(sectionId);
     
     let targetRef;
@@ -114,7 +128,7 @@ const App: React.FC = () => {
         behavior: 'smooth'
       });
     }
-  };
+  }, 300); // 300ms的节流时间
 
   // 处理文件上传
   const handleFileSelect = (file: File) => {
@@ -269,6 +283,7 @@ ${result.suggestions.map((s, i) => `${i+1}. ${s}`).join('\n')}
       <Card
         style={{ 
           height: '100%',
+          minHeight: 200,
           textAlign: 'center',
           borderRadius: 8,
           boxShadow: '0 2px 10px rgba(0, 0, 0, 0.05)'
@@ -414,27 +429,11 @@ ${result.suggestions.map((s, i) => `${i+1}. ${s}`).join('\n')}
               style={{ 
                 fontSize: 24, 
                 color: '#1890ff',
-                animation: 'bounce 2s infinite'
+                cursor: 'pointer'
               }} 
               onClick={() => scrollToSection('features')}
             />
           </div>
-          
-          <style>
-            {`
-              @keyframes bounce {
-                0%, 20%, 50%, 80%, 100% {
-                  transform: translateY(0);
-                }
-                40% {
-                  transform: translateY(-20px);
-                }
-                60% {
-                  transform: translateY(-10px);
-                }
-              }
-            `}
-          </style>
         </div>
 
         {/* 功能展示区 */}
@@ -622,7 +621,8 @@ ${result.suggestions.map((s, i) => `${i+1}. ${s}`).join('\n')}
         {loading && (
                         <div style={{ 
                           textAlign: 'center', 
-                          padding: '40px 0' 
+                          padding: '40px 0',
+                          minHeight: 300
                         }}>
                           <Spin size="large" tip="正在分析中..." />
                           <div style={{ marginTop: 16 }}>
@@ -634,18 +634,20 @@ ${result.suggestions.map((s, i) => `${i+1}. ${s}`).join('\n')}
         )}
 
                       {!loading && !result && (
-                        <Empty
-                          description={
-                            <div>
-                              {file ? '点击"开始分析"按钮分析简历' : '请先上传简历文件'}
-                            </div>
-                          }
-                          style={{ padding: '40px 0' }}
-                        />
+                        <div style={{ minHeight: 300 }}>
+                          <Empty
+                            description={
+                              <div>
+                                {file ? '点击"开始分析"按钮分析简历' : '请先上传简历文件'}
+                              </div>
+                            }
+                            style={{ padding: '40px 0' }}
+                          />
+                        </div>
                       )}
                       
         {!loading && result && (
-                        <div>
+                        <div style={{ minHeight: 300 }}>
                           <div style={{ marginBottom: 24 }}>
                             <Title level={5}>📝 简历摘要</Title>
                             <Paragraph style={{ 
