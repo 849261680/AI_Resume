@@ -518,11 +518,63 @@ ${result.suggestions.map((s, i) => `${i+1}. ${s}`).join('\n')}
             智能解析，精准优化
           </Title>
           
+          {/* 新上传按钮，点击后弹出文件选择并自动分析 */}
+          <input
+            id="resume-upload-input"
+            type="file"
+            accept=".pdf,.docx,.doc,.txt"
+            style={{ display: 'none' }}
+            onChange={async (e) => {
+              const files = e.target.files;
+              if (files && files.length > 0) {
+                setFile(files[0]);
+                setUploadStatus(null);
+                setResult(null);
+                setLoading(true);
+                // 读取文件内容预览
+                const reader = new FileReader();
+                reader.onload = (ev) => {
+                  if (ev.target && typeof ev.target.result === 'string') {
+                    setResumeText(ev.target.result.substring(0, 500) + '...');
+                    setShowResumeText(true);
+                  }
+                };
+                reader.readAsText(files[0]);
+                // 自动分析
+                const formData = new FormData();
+                formData.append('file', files[0]);
+                if (targetPosition) {
+                  formData.append('position', targetPosition);
+                }
+                try {
+                  const apiUrl = import.meta.env.VITE_API_URL;
+                  if (!apiUrl) {
+                    message.error("API 地址未配置，请联系管理员。");
+                    setLoading(false);
+                    setUploadStatus('error');
+                    return;
+                  }
+                  const response = await axios.post(`${apiUrl}/api/analyze`, formData, {
+                    headers: { 'Content-Type': 'multipart/form-data' },
+                    timeout: 30000
+                  });
+                  setResult(response.data);
+                  setUploadStatus('success');
+                  message.success('简历分析完成！');
+                } catch (err) {
+                  setUploadStatus('error');
+                  message.error('简历分析失败，请重试');
+                } finally {
+                  setLoading(false);
+                }
+              }
+            }}
+          />
           <Button
             type="primary"
             size="large"
             icon={<UploadOutlined />}
-            onClick={() => scrollToSection('upload')}
+            onClick={() => document.getElementById('resume-upload-input')?.click()}
             style={{ 
               height: isMobile ? 48 : 56,
               fontSize: isMobile ? 16 : 18,
@@ -536,26 +588,79 @@ ${result.suggestions.map((s, i) => `${i+1}. ${s}`).join('\n')}
               boxShadow: '0 8px 16px rgba(0, 0, 0, 0.1)'
             }}
             className="hero-button"
+            loading={loading}
           >
             上传简历
           </Button>
-          
           <div>
             <Text type="secondary">
               支持PDF / DOCX / TXT格式
             </Text>
           </div>
-          
-          <div style={{ marginTop: 40 }}>
-            <ArrowDownOutlined 
-              style={{ 
-                fontSize: 24, 
-                color: '#1890ff',
-                cursor: 'pointer'
-              }} 
-              onClick={() => scrollToSection('upload')}
-            />
-          </div>
+          {/* 上传后分析结果展示区 */}
+          {result && !loading && (
+            <div style={{
+              margin: '40px auto 0 auto',
+              maxWidth: 700,
+              background: '#fff',
+              borderRadius: 16,
+              boxShadow: '0 4px 24px rgba(53,99,233,0.08)',
+              padding: isMobile ? 20 : 40,
+              color: '#222',
+              textAlign: 'left',
+              position: 'relative',
+              zIndex: 2
+            }}>
+              <Title level={3} style={{ color: 'var(--color-primary)', marginBottom: 24 }}>AI分析结果</Title>
+              <div style={{ marginBottom: 24 }}>
+                <Title level={5}>📝 简历摘要</Title>
+                <Paragraph style={{ background: '#f9f9f9', padding: 16, borderRadius: 8 }}>
+                  {result.summary}
+                </Paragraph>
+              </div>
+              <div style={{ marginBottom: 24 }}>
+                <Title level={5}>📌 关键技能</Title>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+                  {result.keywords.length > 0 ? (
+                    result.keywords.map((keyword, index) => (
+                      <Tag color="blue" key={index} style={{ margin: 0, padding: '4px 8px', fontSize: 14 }}>
+                        {keyword}
+                      </Tag>
+                    ))
+                  ) : (
+                    <Text type="secondary">暂无提取到关键技能</Text>
+                  )}
+                </div>
+              </div>
+              <div>
+                <Title level={5}>📈 优化建议</Title>
+                <List
+                  size="small"
+                  dataSource={result.suggestions}
+                  renderItem={(item, index) => (
+                    <List.Item style={{ padding: '8px 0' }}>
+                      <div style={{ display: 'flex', alignItems: 'flex-start' }}>
+                        <CheckCircleOutlined style={{ color: '#52c41a', marginRight: 8, marginTop: 4 }} />
+                        <div>{`${index + 1}. ${item}`}</div>
+                      </div>
+                    </List.Item>
+                  )}
+                  locale={{ emptyText: '暂无优化建议' }}
+                />
+              </div>
+              <Divider />
+              <div style={{ textAlign: 'center' }}>
+                <Button
+                  type="primary"
+                  icon={<DownloadOutlined />}
+                  onClick={handleDownloadReport}
+                  style={{ borderRadius: 8, padding: '0 24px' }}
+                >
+                  下载分析报告
+                </Button>
+              </div>
+            </div>
+          )}
         </div>
         
         {/* 上传与分析区 */}
