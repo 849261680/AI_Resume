@@ -710,10 +710,10 @@ ${result.suggestions.map((s, i) => `${i+1}. ${s}`).join('\n')}
             ResumeMaster AI
           </div>
           <Text style={{ color: 'rgba(255, 255, 255, 0.65)' }}>
-            通过AI技术助力求职者创建更具竞争力的简历，提升职场竞争力。
+            通过AI技术助力求职者创建更具竞争力的简历。
           </Text>
           <Divider style={{ borderColor: 'rgba(255, 255, 255, 0.1)', margin: '24px 0' }} />
-          <div>© 2025 ResumeMaster AI. All rights reserved. | Powered by Jack Liu</div>
+          <div>© 2025 ResumeMaster AI. All rights reserved. | Powered by 彭世雄</div>
         </div>
       </Footer>
     </Layout>
