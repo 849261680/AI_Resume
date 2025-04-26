@@ -37,7 +37,6 @@ import {
   UserOutlined,
   MailOutlined,
   GithubOutlined,
-  LinkedinOutlined,
   ArrowDownOutlined,
   ArrowRightOutlined,
   InfoCircleOutlined
@@ -448,7 +447,8 @@ ${result.suggestions.map((s, i) => `${i+1}. ${s}`).join('\n')}
           ResumeMaster AI
         </div>
         
-        <Button 
+        {/* 删除右上角立即上传简历按钮 */}
+        {/* <Button 
           type="primary" 
           size={isMobile ? 'middle' : 'large'}
           onClick={() => scrollToSection('upload')}
@@ -462,7 +462,7 @@ ${result.suggestions.map((s, i) => `${i+1}. ${s}`).join('\n')}
           className="hover-effect"
         >
           立即上传简历
-        </Button>
+        </Button> */}
         
         {isMobile && (
           <Button 
@@ -578,7 +578,8 @@ ${result.suggestions.map((s, i) => `${i+1}. ${s}`).join('\n')}
             style={{ 
               height: isMobile ? 48 : 56,
               fontSize: isMobile ? 16 : 18,
-              padding: '0 32px',
+              padding: '0 20px',
+              minWidth: 120,
               borderRadius: 8,
               marginBottom: 16,
               background: '#ffffff',
@@ -597,70 +598,85 @@ ${result.suggestions.map((s, i) => `${i+1}. ${s}`).join('\n')}
               支持PDF / DOCX / TXT格式
             </Text>
           </div>
-          {/* 上传后分析结果展示区 */}
-          {result && !loading && (
-            <div style={{
-              margin: '40px auto 0 auto',
-              maxWidth: 700,
-              background: '#fff',
-              borderRadius: 16,
-              boxShadow: '0 4px 24px rgba(53,99,233,0.08)',
-              padding: isMobile ? 20 : 40,
-              color: '#222',
-              textAlign: 'left',
-              position: 'relative',
-              zIndex: 2
-            }}>
-              <Title level={3} style={{ color: 'var(--color-primary)', marginBottom: 24 }}>AI分析结果</Title>
-              <div style={{ marginBottom: 24 }}>
-                <Title level={5}>📝 简历摘要</Title>
-                <Paragraph style={{ background: '#f9f9f9', padding: 16, borderRadius: 8 }}>
-                  {result.summary}
-                </Paragraph>
-              </div>
-              <div style={{ marginBottom: 24 }}>
-                <Title level={5}>📌 关键技能</Title>
-                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
-                  {result.keywords.length > 0 ? (
-                    result.keywords.map((keyword, index) => (
-                      <Tag color="blue" key={index} style={{ margin: 0, padding: '4px 8px', fontSize: 14 }}>
-                        {keyword}
-                      </Tag>
-                    ))
-                  ) : (
-                    <Text type="secondary">暂无提取到关键技能</Text>
-                  )}
+          {/* 结果展示区，无论是否有结果都显示，并加宽 */}
+          <div style={{
+            margin: '40px auto 0 auto',
+            maxWidth: isMobile ? 360 : 900,
+            background: '#fff',
+            borderRadius: 16,
+            boxShadow: '0 4px 24px rgba(53,99,233,0.08)',
+            padding: isMobile ? 20 : 48,
+            color: '#222',
+            textAlign: 'left',
+            position: 'relative',
+            zIndex: 2,
+            minHeight: 220
+          }}>
+            {loading ? (
+              <div style={{ textAlign: 'center', padding: '40px 0' }}>
+                <Spin size="large" tip="正在分析中..." />
+                <div style={{ marginTop: 16 }}>
+                  <Text type="secondary">正在使用AI深度分析你的简历...</Text>
                 </div>
               </div>
-              <div>
-                <Title level={5}>📈 优化建议</Title>
-                <List
-                  size="small"
-                  dataSource={result.suggestions}
-                  renderItem={(item, index) => (
-                    <List.Item style={{ padding: '8px 0' }}>
-                      <div style={{ display: 'flex', alignItems: 'flex-start' }}>
-                        <CheckCircleOutlined style={{ color: '#52c41a', marginRight: 8, marginTop: 4 }} />
-                        <div>{`${index + 1}. ${item}`}</div>
-                      </div>
-                    </List.Item>
-                  )}
-                  locale={{ emptyText: '暂无优化建议' }}
-                />
+            ) : result ? (
+              <>
+                <Title level={3} style={{ color: 'var(--color-primary)', marginBottom: 24 }}>AI分析结果</Title>
+                <div style={{ marginBottom: 24 }}>
+                  <Title level={5}>📝 简历摘要</Title>
+                  <Paragraph style={{ background: '#f9f9f9', padding: 16, borderRadius: 8 }}>
+                    {result.summary}
+                  </Paragraph>
+                </div>
+                <div style={{ marginBottom: 24 }}>
+                  <Title level={5}>📌 关键技能</Title>
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+                    {result.keywords.length > 0 ? (
+                      result.keywords.map((keyword, index) => (
+                        <Tag color="blue" key={index} style={{ margin: 0, padding: '4px 8px', fontSize: 14 }}>
+                          {keyword}
+                        </Tag>
+                      ))
+                    ) : (
+                      <Text type="secondary">暂无提取到关键技能</Text>
+                    )}
+                  </div>
+                </div>
+                <div>
+                  <Title level={5}>📈 优化建议</Title>
+                  <List
+                    size="small"
+                    dataSource={result.suggestions}
+                    renderItem={(item, index) => (
+                      <List.Item style={{ padding: '8px 0' }}>
+                        <div style={{ display: 'flex', alignItems: 'flex-start' }}>
+                          <CheckCircleOutlined style={{ color: '#52c41a', marginRight: 8, marginTop: 4 }} />
+                          <div>{`${index + 1}. ${item}`}</div>
+                        </div>
+                      </List.Item>
+                    )}
+                    locale={{ emptyText: '暂无优化建议' }}
+                  />
+                </div>
+                <Divider />
+                <div style={{ textAlign: 'center' }}>
+                  <Button
+                    type="primary"
+                    icon={<DownloadOutlined />}
+                    onClick={handleDownloadReport}
+                    style={{ borderRadius: 8, padding: '0 24px' }}
+                  >
+                    下载分析报告
+                  </Button>
+                </div>
+              </>
+            ) : (
+              <div style={{ textAlign: 'center', padding: '40px 0', color: '#888' }}>
+                <FileTextOutlined style={{ fontSize: 40, color: '#d9d9d9', marginBottom: 16 }} />
+                <div style={{ fontSize: 18, marginTop: 8 }}>请上传您的简历，AI将为您生成分析结果</div>
               </div>
-              <Divider />
-              <div style={{ textAlign: 'center' }}>
-                <Button
-                  type="primary"
-                  icon={<DownloadOutlined />}
-                  onClick={handleDownloadReport}
-                  style={{ borderRadius: 8, padding: '0 24px' }}
-                >
-                  下载分析报告
-                </Button>
-              </div>
-            </div>
-          )}
+            )}
+          </div>
         </div>
       </Content>
       
@@ -672,59 +688,17 @@ ${result.suggestions.map((s, i) => `${i+1}. ${s}`).join('\n')}
         padding: '40px 50px'
       }}>
         <div style={{ maxWidth: 1200, margin: '0 auto' }}>
-          <Row gutter={[40, 24]}>
-            <Col xs={24} md={8}>
-              <div style={{ 
-                fontSize: 22, 
-                fontWeight: 'bold',
-                color: 'white',
-                marginBottom: 16
-              }}>
-                ResumeMaster AI
-              </div>
-              <Text style={{ color: 'rgba(255, 255, 255, 0.65)' }}>
-                通过AI技术助力求职者创建更具竞争力的简历，提升职场竞争力。
-              </Text>
-            </Col>
-            <Col xs={12} md={8}>
-              <Title level={5} style={{ color: 'white', marginBottom: 16 }}>导航</Title>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                <a 
-                  onClick={() => scrollToSection('home')}
-                  style={{ color: 'rgba(255, 255, 255, 0.65)', cursor: 'pointer' }}
-                >
-                  首页
-                </a>
-                <a 
-                  onClick={() => scrollToSection('upload')}
-                  style={{ color: 'rgba(255, 255, 255, 0.65)', cursor: 'pointer' }}
-                >
-                  简历上传
-                </a>
-                <a 
-                  onClick={() => scrollToSection('faq')}
-                  style={{ color: 'rgba(255, 255, 255, 0.65)', cursor: 'pointer' }}
-                >
-                  常见问题
-                </a>
-              </div>
-            </Col>
-            <Col xs={12} md={8}>
-              <Title level={5} style={{ color: 'white', marginBottom: 16 }}>联系我们</Title>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                <div style={{ color: 'rgba(255, 255, 255, 0.65)' }}>
-                  <MailOutlined style={{ marginRight: 8 }} />
-                  contact@resumemaster.ai
-                </div>
-                <div style={{ marginTop: 16 }}>
-                  <Space size={16}>
-                    <a href="#" style={{ color: 'white' }}><GithubOutlined style={{ fontSize: 18 }} /></a>
-                    <a href="#" style={{ color: 'white' }}><LinkedinOutlined style={{ fontSize: 18 }} /></a>
-                  </Space>
-                </div>
-              </div>
-            </Col>
-          </Row>
+          <div style={{ 
+            fontSize: 22, 
+            fontWeight: 'bold',
+            color: 'white',
+            marginBottom: 16
+          }}>
+            ResumeMaster AI
+          </div>
+          <Text style={{ color: 'rgba(255, 255, 255, 0.65)' }}>
+            通过AI技术助力求职者创建更具竞争力的简历，提升职场竞争力。
+          </Text>
           <Divider style={{ borderColor: 'rgba(255, 255, 255, 0.1)', margin: '24px 0' }} />
           <div>© 2025 ResumeMaster AI. All rights reserved. | Powered by Jack Liu</div>
         </div>
