@@ -17,18 +17,29 @@ import {
   Space,
   Collapse,
   message,
-  Tooltip
+  Tooltip,
+  Tabs,
+  Image,
+  Carousel,
+  Avatar
 } from 'antd';
 import {
   UploadOutlined,
-  FileDoneOutlined,
+  FileTextOutlined,
   RocketOutlined,
   ExperimentOutlined,
   RobotOutlined,
   BarChartOutlined,
+  PieChartOutlined,
   CheckCircleOutlined,
   DownloadOutlined,
+  QuestionCircleOutlined,
+  UserOutlined,
+  MailOutlined,
+  GithubOutlined,
+  LinkedinOutlined,
   ArrowDownOutlined,
+  ArrowRightOutlined,
   InfoCircleOutlined
 } from '@ant-design/icons';
 import axios, { AxiosError } from 'axios';
@@ -37,6 +48,7 @@ const { Title, Text, Paragraph } = Typography;
 const { Header, Content, Footer } = Layout;
 const { Panel } = Collapse;
 const { TextArea } = Input;
+const { TabPane } = Tabs;
 
 // 添加自定义hook监听窗口大小
 const useWindowSize = () => {
@@ -66,7 +78,50 @@ interface AnalysisResult {
   suggestions: string[]; // 优化建议列表
 }
 
+// 定义常见问题数据
+const faqData = [
+  {
+    question: '支持哪些文件格式？',
+    answer: '目前支持PDF、DOCX和TXT格式的简历文件上传和分析。'
+  },
+  {
+    question: 'AI分析的准确度如何？',
+    answer: '我们使用DeepSeek AI大语言模型进行分析，能够理解大多数行业的专业术语和技能要求，准确度较高。但仍建议结合个人情况判断优化建议。'
+  },
+  {
+    question: '我的简历数据安全吗？',
+    answer: '您的简历仅用于当前分析，我们不会永久存储您的简历内容，分析完成后数据将自动清除。'
+  },
+  {
+    question: '使用次数有限制吗？',
+    answer: '目前测试阶段对每位用户没有使用次数限制，未来可能会根据服务器负载情况调整。'
+  }
+];
+
+// 定义用户评价数据
+const testimonials = [
+  {
+    name: '张先生',
+    avatar: 'https://randomuser.me/api/portraits/men/1.jpg',
+    position: '软件工程师',
+    comment: '通过AI助手优化后，简历获得了更多面试邀请，真的很实用！'
+  },
+  {
+    name: '李女士',
+    avatar: 'https://randomuser.me/api/portraits/women/2.jpg',
+    position: '市场营销专员',
+    comment: '分析结果很专业，给出的建议针对性强，帮我找到了简历的弱点。'
+  },
+  {
+    name: '王先生',
+    avatar: 'https://randomuser.me/api/portraits/men/3.jpg',
+    position: '产品经理',
+    comment: '简单易用，结果一目了然，为我的求职带来了很大帮助。'
+  }
+];
+
 const App: React.FC = () => {
+  // 状态管理
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<AnalysisResult | null>(null);
   const [uploadStatus, setUploadStatus] = useState<'success' | 'error' | null>(null);
@@ -75,16 +130,37 @@ const App: React.FC = () => {
   const [resumeText, setResumeText] = useState<string>('');
   const [targetPosition, setTargetPosition] = useState<string>('');
   const [showResumeText, setShowResumeText] = useState<boolean>(false);
+  const [activeTabKey, setActiveTabKey] = useState<string>('upload');
+  const [currentFaqVisible, setCurrentFaqVisible] = useState<number | null>(null);
+  const [testimonialIndex, setTestimonialIndex] = useState<number>(0);
   
+  // 引用
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const heroRef = useRef<HTMLDivElement>(null);
   const featuresRef = useRef<HTMLDivElement>(null);
   const uploadRef = useRef<HTMLDivElement>(null);
+  const faqRef = useRef<HTMLDivElement>(null);
+  const testimonialsRef = useRef<HTMLDivElement>(null);
   const aboutRef = useRef<HTMLDivElement>(null);
   
+  // 响应式设计变量
   const { width } = useWindowSize();
   const isMobile = width < 576;
   const isTablet = width >= 576 && width < 992;
+  
+  // 色彩变量
+  const colors = {
+    primary: 'var(--color-primary)',
+    secondary: 'var(--color-secondary)',
+    accent: 'var(--color-accent)',
+    text: 'var(--color-text)',
+    textLight: 'var(--color-text-light)',
+    background: 'var(--color-background)',
+    border: 'var(--color-border)',
+    cardBg: '#ffffff',
+    gradientPrimary: 'linear-gradient(90deg, var(--color-primary), var(--color-secondary))',
+    footerBg: '#1E293B'
+  };
 
   // 添加节流函数
   const throttle = (func: Function, delay: number) => {
@@ -114,6 +190,12 @@ const App: React.FC = () => {
         break;
       case 'upload':
         targetRef = uploadRef;
+        break;
+      case 'testimonials':
+        targetRef = testimonialsRef;
+        break;
+      case 'faq':
+        targetRef = faqRef;
         break;
       case 'about':
         targetRef = aboutRef;
@@ -285,30 +367,45 @@ ${result.suggestions.map((s, i) => `${i+1}. ${s}`).join('\n')}
     };
   }, []);
 
-  // 渲染功能卡片
+  // 修改功能卡片渲染函数
   const renderFeatureCard = (
     icon: React.ReactNode,
     title: string,
     description: string
   ) => (
-    <Col xs={24} sm={12} md={6} style={{ marginBottom: isMobile ? 16 : 0 }}>
+    <Col xs={24} sm={12} md={6} style={{ marginBottom: isMobile ? 24 : 0 }}>
       <Card
         style={{ 
           height: '100%',
-          minHeight: 200,
+          minHeight: 240,
           textAlign: 'center',
-          borderRadius: 8,
-          boxShadow: '0 2px 10px rgba(0, 0, 0, 0.05)'
+          borderRadius: 12,
+          boxShadow: '0 4px 16px rgba(0, 0, 0, 0.06)',
+          border: 'none',
+          transition: 'all 0.3s ease'
         }}
+        className="feature-card"
         bodyStyle={{ padding: 24 }}
       >
-        <div style={{ fontSize: 32, color: '#1890ff', marginBottom: 16 }}>
+        <div style={{ 
+          fontSize: 32, 
+          color: 'var(--color-primary)', 
+          marginBottom: 20,
+          background: 'rgba(53, 99, 233, 0.1)',
+          width: 72,
+          height: 72,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          borderRadius: '50%',
+          margin: '0 auto 24px auto'
+        }}>
           {icon}
         </div>
-        <Title level={isMobile ? 5 : 4} style={{ marginBottom: 12 }}>
+        <Title level={isMobile ? 5 : 4} style={{ marginBottom: 16, fontSize: isMobile ? 18 : 20 }}>
           {title}
         </Title>
-        <Text type="secondary">{description}</Text>
+        <Text style={{ color: 'var(--color-text-light)', fontSize: 14 }}>{description}</Text>
       </Card>
     </Col>
   );
@@ -318,10 +415,11 @@ ${result.suggestions.map((s, i) => `${i+1}. ${s}`).join('\n')}
       height: '100vh', 
       overflowY: 'auto', 
       overflowX: 'hidden',
-      willChange: 'transform', // 启用硬件加速
-      transform: 'translateZ(0)', // 强制GPU渲染
-      WebkitBackfaceVisibility: 'hidden', // 防止元素闪烁
-      backfaceVisibility: 'hidden'
+      willChange: 'transform',
+      transform: 'translateZ(0)',
+      WebkitBackfaceVisibility: 'hidden',
+      backfaceVisibility: 'hidden',
+      background: 'var(--color-background)'
     }}>
       {/* 导航栏 */}
       <Header style={{ 
@@ -330,17 +428,18 @@ ${result.suggestions.map((s, i) => `${i+1}. ${s}`).join('\n')}
         zIndex: 999, 
         width: '100%',
         height: 64,
-        background: '#fff',
-        boxShadow: '0 2px 8px rgba(0, 0, 0, 0.06)',
+        background: '#ffffff',
+        boxShadow: '0 4px 12px rgba(0, 0, 0, 0.08)',
         padding: isMobile ? '0 16px' : '0 50px',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'space-between'
       }}>
         <div style={{ 
-          fontSize: isMobile ? 18 : 20, 
+          fontSize: isMobile ? 18 : 22, 
           fontWeight: 'bold',
-          color: '#1890ff'
+          color: 'var(--color-primary)',
+          letterSpacing: '0.5px'
         }}>
           ResumeMaster AI
         </div>
@@ -360,6 +459,12 @@ ${result.suggestions.map((s, i) => `${i+1}. ${s}`).join('\n')}
             <Menu.Item key="upload" onClick={() => scrollToSection('upload')}>
               简历上传
             </Menu.Item>
+            <Menu.Item key="testimonials" onClick={() => scrollToSection('testimonials')}>
+              用户评价
+            </Menu.Item>
+            <Menu.Item key="faq" onClick={() => scrollToSection('faq')}>
+              常见问题
+            </Menu.Item>
             <Menu.Item key="about" onClick={() => scrollToSection('about')}>
               关于我们
             </Menu.Item>
@@ -373,8 +478,11 @@ ${result.suggestions.map((s, i) => `${i+1}. ${s}`).join('\n')}
           style={{ 
             borderRadius: 6, 
             fontWeight: 'bold',
-            display: isMobile ? 'none' : 'block'
+            display: isMobile ? 'none' : 'block',
+            background: 'var(--color-primary)',
+            border: 'none'
           }}
+          className="hover-effect"
         >
           立即上传简历
         </Button>
@@ -398,40 +506,44 @@ ${result.suggestions.map((s, i) => `${i+1}. ${s}`).join('\n')}
           style={{
             textAlign: 'center',
             padding: isMobile ? '40px 16px' : '80px 50px',
-            background: 'linear-gradient(135deg, #f5f9ff 0%, #ecf6ff 100%)',
-            minHeight: isMobile ? 400 : 500,
+            background: 'linear-gradient(135deg, var(--color-primary) 0%, var(--color-secondary) 100%)',
+            minHeight: isMobile ? '80vh' : '90vh',
             display: 'flex',
             flexDirection: 'column',
             justifyContent: 'center',
             position: 'relative',
-            overflow: 'hidden'
+            overflow: 'hidden',
+            color: '#ffffff'
           }}
         >
+          <div className="wave-background"></div>
           <Title 
             level={isMobile ? 2 : 1} 
             style={{ 
               marginBottom: 16,
-              fontSize: isMobile ? 28 : (isTablet ? 36 : 48)
+              fontSize: isMobile ? 32 : (isTablet ? 40 : 48),
+              color: '#ffffff',
+              fontWeight: 700
             }}
           >
-            提升你的求职竞争力！
+            一键AI优化简历
           </Title>
           
           <Title 
             level={isMobile ? 4 : 3} 
-            type="secondary"
-        style={{
+            style={{
               marginBottom: 32,
               fontWeight: 'normal',
-              fontSize: isMobile ? 16 : (isTablet ? 20 : 24)
+              fontSize: isMobile ? 18 : (isTablet ? 22 : 24),
+              color: 'rgba(255, 255, 255, 0.85)'
             }}
           >
-            智能解析，精准优化，让简历直击HR痛点
+            智能解析，精准优化
           </Title>
           
           <Button
             type="primary"
-            size={isMobile ? 'large' : 'large'}
+            size="large"
             icon={<UploadOutlined />}
             onClick={() => scrollToSection('upload')}
             style={{ 
@@ -439,8 +551,14 @@ ${result.suggestions.map((s, i) => `${i+1}. ${s}`).join('\n')}
               fontSize: isMobile ? 16 : 18,
               padding: '0 32px',
               borderRadius: 8,
-              marginBottom: 16
+              marginBottom: 16,
+              background: '#ffffff',
+              color: 'var(--color-primary)',
+              border: 'none',
+              fontWeight: 600,
+              boxShadow: '0 8px 16px rgba(0, 0, 0, 0.1)'
             }}
+            className="hero-button"
           >
             上传简历
           </Button>
@@ -468,9 +586,10 @@ ${result.suggestions.map((s, i) => `${i+1}. ${s}`).join('\n')}
           ref={featuresRef}
           style={{
             padding: isMobile ? '40px 16px' : '80px 50px',
-            background: '#fff',
+            background: '#ffffff',
             minHeight: isMobile ? 400 : 500,
-            position: 'relative'
+            position: 'relative',
+            borderBottom: '1px solid var(--color-border)'
           }}
         >
           <Title 
@@ -516,7 +635,7 @@ ${result.suggestions.map((s, i) => `${i+1}. ${s}`).join('\n')}
           ref={uploadRef}
           style={{
             padding: isMobile ? '40px 16px' : '80px 50px',
-            background: '#f5f9ff',
+            background: 'var(--color-background)',
             minHeight: isMobile ? 500 : 600,
             position: 'relative'
           }}
@@ -536,7 +655,7 @@ ${result.suggestions.map((s, i) => `${i+1}. ${s}`).join('\n')}
                     textAlign: 'center'
                   }}
                 >
-                  <FileDoneOutlined style={{ marginRight: 10 }} />
+                  <FileTextOutlined style={{ marginRight: 10 }} />
                   简历上传与分析
                 </Title>
                 
@@ -766,12 +885,158 @@ ${result.suggestions.map((s, i) => `${i+1}. ${s}`).join('\n')}
           </Row>
           </div>
         
+        {/* 用户评价区 */}
+        <div
+          ref={testimonialsRef}
+          style={{
+            padding: isMobile ? '40px 16px' : '80px 50px',
+            background: 'linear-gradient(135deg, rgba(53, 99, 233, 0.05) 0%, rgba(5, 205, 153, 0.05) 100%)',
+            minHeight: isMobile ? 400 : 500,
+            position: 'relative',
+            textAlign: 'center'
+          }}
+        >
+          <Title 
+            level={2} 
+            style={{ 
+              marginBottom: 40,
+              textAlign: 'center',
+              color: 'var(--color-text)',
+              fontWeight: 600
+            }}
+          >
+            用户评价
+          </Title>
+          
+          <Row justify="center" gutter={[24, 24]}>
+            <Col xs={24} lg={18} xl={16}>
+              <Carousel 
+                autoplay 
+                dots={true}
+                autoplaySpeed={5000}
+              >
+                {testimonials.map((item, index) => (
+                  <div key={index}>
+                    <Card 
+                      style={{ 
+                        maxWidth: 800, 
+                        margin: '0 auto', 
+                        borderRadius: 12,
+                        boxShadow: '0 8px 24px rgba(0, 0, 0, 0.06)',
+                        border: 'none',
+                        overflow: 'hidden'
+                      }}
+                      bodyStyle={{ padding: 32 }}
+                    >
+                      <div style={{ 
+                        display: 'flex', 
+                        flexDirection: isMobile ? 'column' : 'row',
+                        alignItems: 'center', 
+                        justifyContent: 'center',
+                        textAlign: 'center'
+                      }}>
+                        <Avatar 
+                          src={item.avatar} 
+                          size={80} 
+                          style={{ margin: isMobile ? '0 0 20px 0' : '0 24px 0 0' }}
+                        />
+                        <div style={{ flex: 1 }}>
+                          <div style={{ 
+                            fontSize: 18, 
+                            fontStyle: 'italic', 
+                            marginBottom: 20,
+                            color: 'var(--color-text)'
+                          }}>
+                            "{item.comment}"
+                          </div>
+                          <div>
+                            <Text strong style={{ fontSize: 16 }}>{item.name}</Text>
+                            <br />
+                            <Text type="secondary">{item.position}</Text>
+                          </div>
+                        </div>
+                      </div>
+                    </Card>
+                  </div>
+                ))}
+              </Carousel>
+            </Col>
+          </Row>
+        </div>
+        
+        {/* FAQ区域 */}
+        <div
+          ref={faqRef}
+          style={{
+            padding: isMobile ? '40px 16px' : '80px 50px',
+            background: '#ffffff',
+            minHeight: isMobile ? 400 : 500,
+            position: 'relative'
+          }}
+        >
+          <Title 
+            level={2} 
+            style={{ 
+              marginBottom: 40,
+              textAlign: 'center',
+              color: 'var(--color-text)',
+              fontWeight: 600
+            }}
+          >
+            常见问题
+          </Title>
+          
+          <Row justify="center" gutter={[24, 24]}>
+            <Col xs={24} sm={20} md={18} lg={16} xl={14}>
+              <Card 
+                style={{ 
+                  borderRadius: 12, 
+                  boxShadow: '0 8px 24px rgba(0, 0, 0, 0.06)',
+                  border: 'none'
+                }}
+                bodyStyle={{ padding: isMobile ? 16 : 32 }}
+              >
+                <Collapse 
+                  bordered={false} 
+                  expandIconPosition="right"
+                  style={{ background: 'transparent' }}
+                >
+                  {faqData.map((item, index) => (
+                    <Panel 
+                      header={
+                        <span style={{ fontSize: 16, fontWeight: 500 }}>
+                          <QuestionCircleOutlined style={{ 
+                            color: 'var(--color-primary)', 
+                            marginRight: 8 
+                          }} />
+                          {item.question}
+                        </span>
+                      } 
+                      key={index}
+                      style={{ 
+                        marginBottom: 16, 
+                        background: '#fff',
+                        borderRadius: 8,
+                        border: `1px solid var(--color-border)`
+                      }}
+                    >
+                      <Paragraph style={{ margin: 0 }}>
+                        {item.answer}
+                      </Paragraph>
+                    </Panel>
+                  ))}
+                </Collapse>
+              </Card>
+            </Col>
+          </Row>
+        </div>
+        
         {/* 关于我们 */}
         <div
           ref={aboutRef}
           style={{
             padding: isMobile ? '40px 16px' : '80px 50px',
-            background: '#fff',
+            background: '#ffffff',
             minHeight: isMobile ? 400 : 500,
             position: 'relative'
           }}
@@ -781,14 +1046,23 @@ ${result.suggestions.map((s, i) => `${i+1}. ${s}`).join('\n')}
               <Title 
                 level={2} 
                 style={{ 
-                  marginBottom: 32,
-                  textAlign: 'center'
+                  marginBottom: 40,
+                  textAlign: 'center',
+                  color: 'var(--color-text)',
+                  fontWeight: 600
                 }}
               >
                 关于我们
               </Title>
               
-              <Card style={{ borderRadius: 8 }}>
+              <Card 
+                style={{ 
+                  borderRadius: 12, 
+                  boxShadow: '0 8px 24px rgba(0, 0, 0, 0.06)',
+                  border: 'none'
+                }}
+                bodyStyle={{ padding: 32 }}
+              >
                 <Title level={4}>我们是谁？</Title>
                 <Paragraph>
                   ResumeMaster AI 项目致力于帮助求职者优化简历，通过人工智能技术为用户提供个性化的简历分析和优化建议，让求职者在竞争激烈的就业市场中脱颖而出。
@@ -827,14 +1101,67 @@ ${result.suggestions.map((s, i) => `${i+1}. ${s}`).join('\n')}
       {/* 页脚 */}
       <Footer style={{ 
         textAlign: 'center',
-        background: '#001529',
+        background: '#1E293B',
         color: 'rgba(255, 255, 255, 0.65)',
-        padding: '24px 50px'
+        padding: '40px 50px'
       }}>
-        <div>© 2025 ResumeMaster AI. All rights reserved.</div>
-        <div style={{ marginTop: 8 }}>
-          联系邮箱：contact@resumemaster.ai | Powered by Jack Liu
-    </div>
+        <div style={{ maxWidth: 1200, margin: '0 auto' }}>
+          <Row gutter={[40, 24]}>
+            <Col xs={24} md={8}>
+              <div style={{ 
+                fontSize: 22, 
+                fontWeight: 'bold',
+                color: 'white',
+                marginBottom: 16
+              }}>
+                ResumeMaster AI
+              </div>
+              <Text style={{ color: 'rgba(255, 255, 255, 0.65)' }}>
+                通过AI技术助力求职者创建更具竞争力的简历，提升职场竞争力。
+              </Text>
+            </Col>
+            <Col xs={12} md={8}>
+              <Title level={5} style={{ color: 'white', marginBottom: 16 }}>导航</Title>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                <a 
+                  onClick={() => scrollToSection('home')}
+                  style={{ color: 'rgba(255, 255, 255, 0.65)', cursor: 'pointer' }}
+                >
+                  首页
+                </a>
+                <a 
+                  onClick={() => scrollToSection('upload')}
+                  style={{ color: 'rgba(255, 255, 255, 0.65)', cursor: 'pointer' }}
+                >
+                  简历上传
+                </a>
+                <a 
+                  onClick={() => scrollToSection('faq')}
+                  style={{ color: 'rgba(255, 255, 255, 0.65)', cursor: 'pointer' }}
+                >
+                  常见问题
+                </a>
+              </div>
+            </Col>
+            <Col xs={12} md={8}>
+              <Title level={5} style={{ color: 'white', marginBottom: 16 }}>联系我们</Title>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                <div style={{ color: 'rgba(255, 255, 255, 0.65)' }}>
+                  <MailOutlined style={{ marginRight: 8 }} />
+                  contact@resumemaster.ai
+                </div>
+                <div style={{ marginTop: 16 }}>
+                  <Space size={16}>
+                    <a href="#" style={{ color: 'white' }}><GithubOutlined style={{ fontSize: 18 }} /></a>
+                    <a href="#" style={{ color: 'white' }}><LinkedinOutlined style={{ fontSize: 18 }} /></a>
+                  </Space>
+                </div>
+              </div>
+            </Col>
+          </Row>
+          <Divider style={{ borderColor: 'rgba(255, 255, 255, 0.1)', margin: '24px 0' }} />
+          <div>© 2025 ResumeMaster AI. All rights reserved. | Powered by Jack Liu</div>
+        </div>
       </Footer>
     </Layout>
   );
