@@ -578,8 +578,8 @@ ${result.suggestions.map((s, i) => `${i+1}. ${s}`).join('\n')}
             style={{ 
               height: isMobile ? 48 : 56,
               fontSize: isMobile ? 16 : 18,
-              padding: '0 20px',
-              minWidth: 120,
+              padding: '0 16px',
+              minWidth: isMobile ? 100 : 110,
               borderRadius: 8,
               marginBottom: 16,
               background: '#ffffff',
