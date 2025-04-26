@@ -457,9 +457,6 @@ ${result.suggestions.map((s, i) => `${i+1}. ${s}`).join('\n')}
             <Menu.Item key="home" onClick={() => scrollToSection('home')}>
               首页
             </Menu.Item>
-            <Menu.Item key="features" onClick={() => scrollToSection('features')}>
-              功能介绍
-            </Menu.Item>
             <Menu.Item key="upload" onClick={() => scrollToSection('upload')}>
               简历上传
             </Menu.Item>
@@ -580,58 +577,9 @@ ${result.suggestions.map((s, i) => `${i+1}. ${s}`).join('\n')}
                 color: '#1890ff',
                 cursor: 'pointer'
               }} 
-              onClick={() => scrollToSection('features')}
+              onClick={() => scrollToSection('upload')}
             />
           </div>
-        </div>
-
-        {/* 功能展示区 */}
-        <div
-          ref={featuresRef}
-          style={{
-            padding: isMobile ? '40px 16px' : '80px 50px',
-            background: '#ffffff',
-            minHeight: isMobile ? 400 : 500,
-            position: 'relative',
-            borderBottom: '1px solid var(--color-border)'
-          }}
-        >
-          <Title 
-            level={2} 
-            style={{ 
-              textAlign: 'center', 
-              marginBottom: 50,
-              fontSize: isMobile ? 24 : 32
-            }}
-          >
-            核心功能介绍
-          </Title>
-          
-          <Row gutter={[24, 24]}>
-            {renderFeatureCard(
-              <UploadOutlined />,
-              "简历文件上传",
-              "支持多种文件格式，快速提取简历内容"
-            )}
-            
-            {renderFeatureCard(
-              <ExperimentOutlined />,
-              "自动内容提取",
-              "智能识别简历中的关键信息和技能点"
-            )}
-            
-            {renderFeatureCard(
-              <RobotOutlined />,
-              "智能分析处理",
-              "基于DeepSeek AI进行深度语义分析"
-            )}
-            
-            {renderFeatureCard(
-              <BarChartOutlined />,
-              "结果可视化展示",
-              "清晰呈现分析结果和优化建议"
-            )}
-          </Row>
         </div>
         
         {/* 上传与分析区 */}
