@@ -1,0 +1,34 @@
+# Python虚拟环境
+.venv/
+venv/
+env/
+ENV/
+
+# Python编译文件
+__pycache__/
+*.py[cod]
+*$py.class
+
+# 环境变量文件(包含API密钥)
+.env
+
+# 依赖目录
+node_modules/
+dist/
+build/
+
+# 日志文件
+*.log
+
+# MacOS系统文件
+.DS_Store
+
+# IDE配置
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# 临时文件
+tmp/
+temp/ 

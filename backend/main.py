@@ -13,19 +13,20 @@ import os.path
 
 # 添加当前目录到模块搜索路径
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
-from deepseek import DeepSeek
+# 从包装器导入DeepSeekWrapper
+from deepseek_wrapper import DeepSeekWrapper
 
 # 加载环境变量
 load_dotenv()
 
 
-# 配置 DeepSeek 客户端
+# 配置 DeepSeekWrapper 客户端
 deepseek_api_key = os.getenv("DEEPSEEK_API_KEY")
 if not deepseek_api_key:
     print("警告：未找到 DEEPSEEK_API_KEY 环境变量。请设置该变量以使用 DeepSeek 功能。")
-    deepseek_client = None
+    deepseek_wrapper = None
 else:
-    deepseek_client = DeepSeek(api_key=deepseek_api_key)
+    deepseek_wrapper = DeepSeekWrapper(api_key=deepseek_api_key)
 
 app = FastAPI(title="AI简历优化助手")
 
@@ -46,7 +47,7 @@ class ResumeAnalysis(BaseModel):
 # 添加API前缀，匹配前端的请求路径
 @app.post("/api/analyze", response_model=ResumeAnalysis)
 async def analyze_resume(file: UploadFile = File(...)):
-    if deepseek_client is None:
+    if deepseek_wrapper is None:
         raise HTTPException(status_code=503, detail="DeepSeek 服务不可用，请检查 API 密钥配置。")
 
     try:
@@ -82,10 +83,10 @@ async def analyze_resume(file: UploadFile = File(...)):
         if not text_content.strip():
              raise HTTPException(status_code=400, detail="无法从文件中提取有效文本内容。")
 
-        # --- 使用 DeepSeek 进行分析 ---
+        # --- 使用 DeepSeekWrapper 进行分析 ---
         try:
-            # 调用 DeepSeek 客户端分析简历
-            analysis_result = deepseek_client.analyze_resume(text_content)
+            # 调用 DeepSeekWrapper 客户端分析简历
+            analysis_result = deepseek_wrapper.analyze_resume(text_content)
             
             # 提取分析结果
             summary = analysis_result.get("summary", "未能生成摘要")
@@ -98,7 +99,7 @@ async def analyze_resume(file: UploadFile = File(...)):
                 suggestions=suggestions
             )
         except Exception as e:
-            print(f"调用 DeepSeek API 时出错: {e}")
+            print(f"调用 DeepSeek 分析服务时出错: {e}")
             raise HTTPException(status_code=500, detail=f"调用 DeepSeek 分析服务时出错: {e}")
         # --- DeepSeek 分析结束 ---
 
@@ -118,7 +119,7 @@ async def analyze_resume_compat(file: UploadFile = File(...)):
 
 @app.get("/")
 async def read_root():
-    return {"message": "欢迎使用AI简历优化助手"}
+    return {"message": "欢迎使用AI简历优化助手 (类LangChain风格实现)"}
 
 if __name__ == "__main__":
     uvicorn.run(app, host="0.0.0.0", port=8000)
