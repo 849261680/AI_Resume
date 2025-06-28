@@ -447,22 +447,27 @@ ${result.suggestions.map((s, i) => `${i+1}. ${s}`).join('\n')}
           ResumeMaster AI
         </div>
         
-        {/* 删除右上角立即上传简历按钮 */}
-        {/* <Button 
-          type="primary" 
-          size={isMobile ? 'middle' : 'large'}
-          onClick={() => scrollToSection('upload')}
-          style={{ 
-            borderRadius: 6, 
-            fontWeight: 'bold',
-            display: isMobile ? 'none' : 'block',
-            background: 'var(--color-primary)',
-            border: 'none'
+        <a 
+          href="https://psx1.vercel.app" 
+          target="_blank" 
+          rel="noopener noreferrer"
+          style={{
+            fontSize: isMobile ? 14 : 16,
+            color: 'var(--color-text)',
+            textDecoration: 'none',
+            fontWeight: '500',
+            transition: 'color 0.3s ease',
+            display: isMobile ? 'none' : 'block'
           }}
-          className="hover-effect"
+          onMouseEnter={(e) => {
+            e.currentTarget.style.color = 'var(--color-primary)';
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.color = 'var(--color-text)';
+          }}
         >
-          立即上传简历
-        </Button> */}
+          关于作者
+        </a>
         
         {isMobile && (
           <Button 
